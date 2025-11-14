@@ -1,5 +1,5 @@
 import request from "supertest";
-import app from "../app";
+import app from "../src/app";
 
 describe("Employee Logical Operations", () => {
   it("should return employees for a specific branch", async () => {
