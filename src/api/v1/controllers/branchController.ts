@@ -1,44 +1,108 @@
 import { Request, Response } from "express";
-import * as branchService from "../services/branchService";
+import { db } from "../../../../config/firebaseConfig";
+import { Branch } from "../models/Branch";
+import { ApiResponse } from "../models/response/ApiResponse";
 
-export const getBranches = (req: Request, res: Response) => {
-  res.status(200).json(branchService.getAllBranches());
+const collection = db.collection("branches");
+
+export const getBranches = async (req: Request, res: Response) => {
+    try {
+        const snapshot = await collection.get();
+        const branches: Branch[] = snapshot.docs.map((doc) => ({
+            id: doc.id,
+            ...doc.data(),
+        })) as Branch[];
+
+        const response: ApiResponse<Branch[]> = {
+            success: true,
+            data: branches,
+        };
+
+        res.status(200).json(response);
+    } catch {
+        res.status(500).json({ success: false, message: "Failed to fetch branches" });
+    }
 };
 
-export const getBranchById = (req: Request, res: Response) => {
-  const id = Number(req.params.id);
-  const branch = branchService.getBranchById(id);
+export const getBranchById = async (req: Request, res: Response) => {
+    try {
+        const ref = await collection.doc(req.params.id).get();
 
-  if (!branch) {
-    return res.status(404).json({ message: "Branch not found" });
-  }
+        if (!ref.exists) {
+            return res.status(404).json({ success: false, message: "Branch not found" });
+        }
 
-  res.status(200).json(branch);
+        const branch = { id: ref.id, ...ref.data() } as Branch;
+
+        const response: ApiResponse<Branch> = {
+            success: true,
+            data: branch,
+        };
+
+        res.status(200).json(response);
+    } catch {
+        res.status(500).json({ success: false, message: "Failed to fetch branch" });
+    }
 };
 
-export const createBranch = (req: Request, res: Response) => {
-  const newBranch = branchService.createBranch(req.body);
-  res.status(201).json(newBranch);
+export const createBranch = async (req: Request, res: Response) => {
+    try {
+        const docRef = await collection.add(req.body);
+        const newBranch = { id: docRef.id, ...req.body } as Branch;
+
+        const response: ApiResponse<Branch> = {
+            success: true,
+            data: newBranch,
+        };
+
+        res.status(201).json(response);
+    } catch {
+        res.status(500).json({ success: false, message: "Failed to create branch" });
+    }
 };
 
-export const updateBranch = (req: Request, res: Response) => {
-  const id = Number(req.params.id);
-  const updated = branchService.updateBranch(id, req.body);
+export const updateBranch = async (req: Request, res: Response) => {
+    try {
+        const ref = collection.doc(req.params.id);
+        const existing = await ref.get();
 
-  if (!updated) {
-    return res.status(404).json({ message: "Branch not found" });
-  }
+        if (!existing.exists) {
+            return res.status(404).json({ success: false, message: "Branch not found" });
+        }
 
-  res.status(200).json(updated);
+        await ref.update(req.body);
+
+        const updatedBranch = { id: ref.id, ...req.body } as Branch;
+
+        const response: ApiResponse<Branch> = {
+            success: true,
+            data: updatedBranch,
+        };
+
+        res.status(200).json(response);
+    } catch {
+        res.status(500).json({ success: false, message: "Failed to update branch" });
+    }
 };
 
-export const deleteBranch = (req: Request, res: Response) => {
-  const id = Number(req.params.id);
-  const deleted = branchService.deleteBranch(id);
+export const deleteBranch = async (req: Request, res: Response) => {
+    try {
+        const ref = collection.doc(req.params.id);
+        const existing = await ref.get();
 
-  if (!deleted) {
-    return res.status(404).json({ message: "Branch not found" });
-  }
+        if (!existing.exists) {
+            return res.status(404).json({ success: false, message: "Branch not found" });
+        }
 
-  res.status(200).json({ message: "Branch deleted successfully" });
+        await ref.delete();
+
+        const response: ApiResponse<null> = {
+            success: true,
+            message: "Branch deleted",
+        };
+
+        res.status(200).json(response);
+    } catch {
+        res.status(500).json({ success: false, message: "Failed to delete branch" });
+    }
 };

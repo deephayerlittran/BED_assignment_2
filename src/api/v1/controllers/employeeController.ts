@@ -1,45 +1,108 @@
 import { Request, Response } from "express";
-import * as employeeService from "../services/employeeService";
+import { db } from "../../../../config/firebaseConfig";
+import { Employee } from "../models/Employee";
+import { ApiResponse } from "../models/response/ApiResponse";
 
-export const getEmployees = (req: Request, res: Response) => {
-  const data = employeeService.getAllEmployees();
-  res.status(200).json(data);
+const collection = db.collection("employees");
+
+export const getEmployees = async (req: Request, res: Response) => {
+    try {
+        const snapshot = await collection.get();
+        const employees: Employee[] = snapshot.docs.map((doc) => ({
+            id: doc.id,
+            ...doc.data(),
+        })) as Employee[];
+
+        const response: ApiResponse<Employee[]> = {
+            success: true,
+            data: employees,
+        };
+
+        res.status(200).json(response);
+    } catch (err) {
+        res.status(500).json({ success: false, message: "Failed to fetch employees" });
+    }
 };
 
-export const getEmployeeById = (req: Request, res: Response) => {
-  const id = Number(req.params.id);
-  const employee = employeeService.getEmployeeById(id);
+export const getEmployeeById = async (req: Request, res: Response) => {
+    try {
+        const ref = await collection.doc(req.params.id).get();
 
-  if (!employee) {
-    return res.status(404).json({ message: "Employee not found" });
-  }
+        if (!ref.exists) {
+            return res.status(404).json({ success: false, message: "Employee not found" });
+        }
 
-  res.status(200).json(employee);
+        const employee = { id: ref.id, ...ref.data() } as Employee;
+
+        const response: ApiResponse<Employee> = {
+            success: true,
+            data: employee,
+        };
+
+        res.status(200).json(response);
+    } catch {
+        res.status(500).json({ success: false, message: "Failed to fetch employee" });
+    }
 };
 
-export const createEmployee = (req: Request, res: Response) => {
-  const newEmployee = employeeService.createEmployee(req.body);
-  res.status(201).json(newEmployee);
+export const createEmployee = async (req: Request, res: Response) => {
+    try {
+        const docRef = await collection.add(req.body);
+        const newEmployee = { id: docRef.id, ...req.body } as Employee;
+
+        const response: ApiResponse<Employee> = {
+            success: true,
+            data: newEmployee,
+        };
+
+        res.status(201).json(response);
+    } catch {
+        res.status(500).json({ success: false, message: "Failed to create employee" });
+    }
 };
 
-export const updateEmployee = (req: Request, res: Response) => {
-  const id = Number(req.params.id);
-  const updated = employeeService.updateEmployee(id, req.body);
+export const updateEmployee = async (req: Request, res: Response) => {
+    try {
+        const ref = collection.doc(req.params.id);
+        const existing = await ref.get();
 
-  if (!updated) {
-    return res.status(404).json({ message: "Employee not found" });
-  }
+        if (!existing.exists) {
+            return res.status(404).json({ success: false, message: "Employee not found" });
+        }
 
-  res.status(200).json(updated);
+        await ref.update(req.body);
+
+        const updatedEmployee = { id: ref.id, ...req.body } as Employee;
+
+        const response: ApiResponse<Employee> = {
+            success: true,
+            data: updatedEmployee,
+        };
+
+        res.status(200).json(response);
+    } catch {
+        res.status(500).json({ success: false, message: "Failed to update employee" });
+    }
 };
 
-export const deleteEmployee = (req: Request, res: Response) => {
-  const id = Number(req.params.id);
-  const deleted = employeeService.deleteEmployee(id);
+export const deleteEmployee = async (req: Request, res: Response) => {
+    try {
+        const ref = collection.doc(req.params.id);
+        const existing = await ref.get();
 
-  if (!deleted) {
-    return res.status(404).json({ message: "Employee not found" });
-  }
+        if (!existing.exists) {
+            return res.status(404).json({ success: false, message: "Employee not found" });
+        }
 
-  res.status(200).json({ message: "Employee deleted successfully" });
+        await ref.delete();
+
+        const response: ApiResponse<null> = {
+            success: true,
+            message: "Employee deleted",
+        };
+
+        res.status(200).json(response);
+    } catch {
+        res.status(500).json({ success: false, message: "Failed to delete employee" });
+    }
 };
