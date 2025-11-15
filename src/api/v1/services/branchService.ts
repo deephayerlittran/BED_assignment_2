@@ -7,6 +7,7 @@ export interface Branch {
     phone: string;
 }
 
+
 const repo = new FirestoreRepository<Branch>("branches");
 
 export const getAllBranches = async () => {
