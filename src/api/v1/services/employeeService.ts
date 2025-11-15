@@ -1,12 +1,5 @@
 import { FirestoreRepository } from "../repositories/firestoreRepository";
-
-export interface Employee {
-    id?: string;
-    name: string;
-    email: string;
-    position: string;
-    branchId: string;
-}
+import { Employee } from "../models/Employee";
 
 const repo = new FirestoreRepository<Employee>("employees");
 

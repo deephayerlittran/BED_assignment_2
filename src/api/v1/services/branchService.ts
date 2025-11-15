@@ -1,12 +1,5 @@
 import { FirestoreRepository } from "../repositories/firestoreRepository";
-
-export interface Branch {
-    id?: string;
-    name: string;
-    address: string;
-    phone: string;
-}
-
+import { Branch } from "../models/Branch";
 
 const repo = new FirestoreRepository<Branch>("branches");
 

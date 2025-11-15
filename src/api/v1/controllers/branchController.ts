@@ -1,24 +1,81 @@
-import { FirestoreRepository } from "../repositories/firestoreRepository";
+import { Request, Response } from "express";
+import * as service from "../services/branchService";
+import { ApiResponse } from "../models/response/ApiResponse";
 import { Branch } from "../models/Branch";
 
-const repo = new FirestoreRepository<Branch>("branches");
+export const getBranches = async (req: Request, res: Response) => {
+    const branches = await service.getAllBranches();
 
-export const getAllBranches = async () => {
-    return await repo.getAll();
+    const response: ApiResponse<Branch[]> = {
+        success: true,
+        data: branches
+    };
+
+    res.status(200).json(response);
 };
 
-export const getBranchById = async (id: string) => {
-    return await repo.getById(id);
+export const getBranchById = async (req: Request, res: Response) => {
+    const branch = await service.getBranchById(req.params.id);
+
+    if (!branch) {
+        return res.status(404).json({
+            success: false,
+            data: null,
+            message: "Branch not found"
+        });
+    }
+
+    const response: ApiResponse<Branch | null> = {
+        success: true,
+        data: branch
+    };
+
+    res.status(200).json(response);
 };
 
-export const createBranch = async (data: Branch) => {
-    return await repo.create(data);
+export const createBranch = async (req: Request, res: Response) => {
+    const branch = await service.createBranch(req.body);
+
+    const response: ApiResponse<Branch | null> = {
+        success: true,
+        data: branch
+    };
+
+    res.status(201).json(response);
 };
 
-export const updateBranch = async (id: string, updates: Partial<Branch>) => {
-    return await repo.update(id, updates);
+export const updateBranch = async (req: Request, res: Response) => {
+    const updated = await service.updateBranch(req.params.id, req.body);
+
+    if (!updated) {
+        return res.status(404).json({
+            success: false,
+            data: null,
+            message: "Branch not found"
+        });
+    }
+
+    const response: ApiResponse<Branch | null> = {
+        success: true,
+        data: updated
+    };
+
+    res.status(200).json(response);
 };
 
-export const deleteBranch = async (id: string) => {
-    return await repo.delete(id);
+export const deleteBranch = async (req: Request, res: Response) => {
+    const deleted = await service.deleteBranch(req.params.id);
+
+    if (!deleted) {
+        return res.status(404).json({
+            success: false,
+            data: null,
+            message: "Branch not found"
+        });
+    }
+
+    res.status(200).json({
+        success: true,
+        data: null
+    });
 };
