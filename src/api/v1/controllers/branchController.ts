@@ -1,81 +1,64 @@
 import { Request, Response } from "express";
-import * as service from "../services/branchService";
+import * as branchService from "../services/branchService";
 import { ApiResponse } from "../models/response/ApiResponse";
-import { Branch } from "../models/Branch";
+
+
+export const createBranch = async (req: Request, res: Response) => {
+    try {
+        const newBranch = await branchService.createBranch(req.body);
+        return res.status(201).json(ApiResponse.success(newBranch));
+    } catch (error: any) {
+        return res.status(500).json(ApiResponse.error(error.message));
+    }
+};
 
 export const getBranches = async (req: Request, res: Response) => {
-    const branches = await service.getAllBranches();
-
-    const response: ApiResponse<Branch[]> = {
-        success: true,
-        data: branches
-    };
-
-    res.status(200).json(response);
+    try {
+        const branches = await branchService.getAllBranches();
+        return res.status(200).json(ApiResponse.success(branches));
+    } catch (error: any) {
+        return res.status(500).json(ApiResponse.error(error.message));
+    }
 };
 
 export const getBranchById = async (req: Request, res: Response) => {
-    const branch = await service.getBranchById(req.params.id);
+    try {
+        const branch = await branchService.getBranchById(req.params.id);
 
-    if (!branch) {
-        return res.status(404).json({
-            success: false,
-            data: null,
-            message: "Branch not found"
-        });
+        if (!branch) {
+            return res.status(404).json(ApiResponse.error("Branch not found"));
+        }
+
+        return res.status(200).json(ApiResponse.success(branch));
+    } catch (error: any) {
+        return res.status(500).json(ApiResponse.error(error.message));
     }
-
-    const response: ApiResponse<Branch | null> = {
-        success: true,
-        data: branch
-    };
-
-    res.status(200).json(response);
-};
-
-export const createBranch = async (req: Request, res: Response) => {
-    const branch = await service.createBranch(req.body);
-
-    const response: ApiResponse<Branch | null> = {
-        success: true,
-        data: branch
-    };
-
-    res.status(201).json(response);
 };
 
 export const updateBranch = async (req: Request, res: Response) => {
-    const updated = await service.updateBranch(req.params.id, req.body);
+    try {
+        const updated = await branchService.updateBranch(req.params.id, req.body);
 
-    if (!updated) {
-        return res.status(404).json({
-            success: false,
-            data: null,
-            message: "Branch not found"
-        });
+        if (!updated) {
+            return res.status(404).json(ApiResponse.error("Branch not found"));
+        }
+
+        return res.status(200).json(ApiResponse.success(updated));
+    } catch (error: any) {
+        return res.status(500).json(ApiResponse.error(error.message));
     }
-
-    const response: ApiResponse<Branch | null> = {
-        success: true,
-        data: updated
-    };
-
-    res.status(200).json(response);
 };
 
 export const deleteBranch = async (req: Request, res: Response) => {
-    const deleted = await service.deleteBranch(req.params.id);
+    try {
+        const success = await branchService.deleteBranch(req.params.id);
 
-    if (!deleted) {
-        return res.status(404).json({
-            success: false,
-            data: null,
-            message: "Branch not found"
-        });
+        if (!success) {
+            return res.status(404).json(ApiResponse.error("Branch not found"));
+        }
+
+        return res.status(200).json(ApiResponse.success({ deleted: true }));
+    } catch (error: any) {
+        return res.status(500).json(ApiResponse.error(error.message));
     }
-
-    res.status(200).json({
-        success: true,
-        data: null
-    });
 };

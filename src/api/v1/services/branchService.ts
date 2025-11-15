@@ -15,8 +15,8 @@ export const createBranch = async (data: Branch) => {
     return await repo.create(data);
 };
 
-export const updateBranch = async (id: string, updates: Partial<Branch>) => {
-    return await repo.update(id, updates);
+export const updateBranch = async (id: string, data: Partial<Branch>) => {
+    return await repo.update(id, data);
 };
 
 export const deleteBranch = async (id: string) => {
