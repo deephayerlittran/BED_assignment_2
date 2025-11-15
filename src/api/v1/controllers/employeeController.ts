@@ -1,17 +1,11 @@
 import { Request, Response } from "express";
-import { db } from "../../../../config/firebaseConfig";
-import { Employee } from "../models/Employee";
+import * as service from "../services/employeeService";
 import { ApiResponse } from "../models/response/ApiResponse";
-
-const collection = db.collection("employees");
+import { Employee } from "../models/Employee";
 
 export const getEmployees = async (req: Request, res: Response) => {
     try {
-        const snapshot = await collection.get();
-        const employees: Employee[] = snapshot.docs.map((doc) => ({
-            id: doc.id,
-            ...doc.data(),
-        })) as Employee[];
+        const employees = await service.getAllEmployees();
 
         const response: ApiResponse<Employee[]> = {
             success: true,
@@ -19,20 +13,18 @@ export const getEmployees = async (req: Request, res: Response) => {
         };
 
         res.status(200).json(response);
-    } catch (err) {
+    } catch {
         res.status(500).json({ success: false, message: "Failed to fetch employees" });
     }
 };
 
 export const getEmployeeById = async (req: Request, res: Response) => {
     try {
-        const ref = await collection.doc(req.params.id).get();
+        const employee = await service.getEmployeeById(req.params.id);
 
-        if (!ref.exists) {
+        if (!employee) {
             return res.status(404).json({ success: false, message: "Employee not found" });
         }
-
-        const employee = { id: ref.id, ...ref.data() } as Employee;
 
         const response: ApiResponse<Employee> = {
             success: true,
@@ -47,8 +39,7 @@ export const getEmployeeById = async (req: Request, res: Response) => {
 
 export const createEmployee = async (req: Request, res: Response) => {
     try {
-        const docRef = await collection.add(req.body);
-        const newEmployee = { id: docRef.id, ...req.body } as Employee;
+        const newEmployee = await service.createEmployee(req.body);
 
         const response: ApiResponse<Employee> = {
             success: true,
@@ -63,20 +54,15 @@ export const createEmployee = async (req: Request, res: Response) => {
 
 export const updateEmployee = async (req: Request, res: Response) => {
     try {
-        const ref = collection.doc(req.params.id);
-        const existing = await ref.get();
+        const updated = await service.updateEmployee(req.params.id, req.body);
 
-        if (!existing.exists) {
+        if (!updated) {
             return res.status(404).json({ success: false, message: "Employee not found" });
         }
 
-        await ref.update(req.body);
-
-        const updatedEmployee = { id: ref.id, ...req.body } as Employee;
-
         const response: ApiResponse<Employee> = {
             success: true,
-            data: updatedEmployee,
+            data: updated,
         };
 
         res.status(200).json(response);
@@ -87,21 +73,13 @@ export const updateEmployee = async (req: Request, res: Response) => {
 
 export const deleteEmployee = async (req: Request, res: Response) => {
     try {
-        const ref = collection.doc(req.params.id);
-        const existing = await ref.get();
+        const deleted = await service.deleteEmployee(req.params.id);
 
-        if (!existing.exists) {
+        if (!deleted) {
             return res.status(404).json({ success: false, message: "Employee not found" });
         }
 
-        await ref.delete();
-
-        const response: ApiResponse<null> = {
-            success: true,
-            message: "Employee deleted",
-        };
-
-        res.status(200).json(response);
+        res.status(200).json({ success: true, message: "Employee deleted" });
     } catch {
         res.status(500).json({ success: false, message: "Failed to delete employee" });
     }
