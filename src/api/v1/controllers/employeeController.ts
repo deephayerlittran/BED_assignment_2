@@ -1,86 +1,83 @@
 import { Request, Response } from "express";
 import * as service from "../services/employeeService";
 import { ApiResponse } from "../models/response/ApiResponse";
-import { Employee } from "../models/Employee";
 
 export const getEmployees = async (req: Request, res: Response) => {
-    try {
-        const employees = await service.getAllEmployees();
+    const employees = await service.getAllEmployees();
 
-        const response: ApiResponse<Employee[]> = {
-            success: true,
-            data: employees,
-        };
+    const response: ApiResponse<typeof employees> = {
+        success: true,
+        data: employees,
+    };
 
-        res.status(200).json(response);
-    } catch {
-        res.status(500).json({ success: false, message: "Failed to fetch employees" });
-    }
+    res.status(200).json(response);
 };
 
 export const getEmployeeById = async (req: Request, res: Response) => {
-    try {
-        const employee = await service.getEmployeeById(req.params.id);
+    const employee = await service.getEmployeeById(req.params.id);
 
-        if (!employee) {
-            return res.status(404).json({ success: false, message: "Employee not found" });
-        }
-
-        const response: ApiResponse<Employee> = {
-            success: true,
-            data: employee,
-        };
-
-        res.status(200).json(response);
-    } catch {
-        res.status(500).json({ success: false, message: "Failed to fetch employee" });
+    if (!employee) {
+        return res.status(404).json({
+            success: false,
+            data: null,
+            message: "Employee not found",
+        });
     }
+
+    const response: ApiResponse<typeof employee> = {
+        success: true,
+        data: employee,
+    };
+
+    res.status(200).json(response);
 };
 
 export const createEmployee = async (req: Request, res: Response) => {
-    try {
-        const newEmployee = await service.createEmployee(req.body);
+    const newEmployee = await service.createEmployee(req.body);
 
-        const response: ApiResponse<Employee> = {
-            success: true,
-            data: newEmployee,
-        };
+    const response: ApiResponse<typeof newEmployee> = {
+        success: true,
+        data: newEmployee,
+    };
 
-        res.status(201).json(response);
-    } catch {
-        res.status(500).json({ success: false, message: "Failed to create employee" });
-    }
+    res.status(201).json(response);
 };
 
 export const updateEmployee = async (req: Request, res: Response) => {
-    try {
-        const updated = await service.updateEmployee(req.params.id, req.body);
+    const updated = await service.updateEmployee(req.params.id, req.body);
 
-        if (!updated) {
-            return res.status(404).json({ success: false, message: "Employee not found" });
-        }
-
-        const response: ApiResponse<Employee> = {
-            success: true,
-            data: updated,
-        };
-
-        res.status(200).json(response);
-    } catch {
-        res.status(500).json({ success: false, message: "Failed to update employee" });
+    if (!updated) {
+        return res.status(404).json({
+            success: false,
+            data: null,
+            message: "Employee not found",
+        });
     }
+
+    const response: ApiResponse<typeof updated> = {
+        success: true,
+        data: updated,
+    };
+
+    res.status(200).json(response);
 };
 
 export const deleteEmployee = async (req: Request, res: Response) => {
-    try {
-        const deleted = await service.deleteEmployee(req.params.id);
+    const deleted = await service.deleteEmployee(req.params.id);
 
-        if (!deleted) {
-            return res.status(404).json({ success: false, message: "Employee not found" });
-        }
-
-        res.status(200).json({ success: true, message: "Employee deleted" });
-    } catch {
-        res.status(500).json({ success: false, message: "Failed to delete employee" });
+    if (!deleted) {
+        return res.status(404).json({
+            success: false,
+            data: null,
+            message: "Employee not found",
+        });
     }
+
+    const response: ApiResponse<null> = {
+        success: true,
+        data: null,
+        message: "Employee deleted",
+    };
+
+    res.status(200).json(response);
 };
