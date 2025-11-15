@@ -1,24 +1,30 @@
-import { Branch } from "../models/Branch";
 import { FirestoreRepository } from "../repositories/firestoreRepository";
+
+export interface Branch {
+    id?: string;
+    name: string;
+    address: string;
+    phone: string;
+}
 
 const repo = new FirestoreRepository<Branch>("branches");
 
-export const getAllBranches = () => {
-    return repo.getAll();
+export const getAllBranches = async () => {
+    return await repo.getAll();
 };
 
-export const getBranchById = (id: string) => {
-    return repo.getById(id);
+export const getBranchById = async (id: string) => {
+    return await repo.getById(id);
 };
 
-export const createBranch = (data: Branch) => {
-    return repo.create(data);
+export const createBranch = async (data: Branch) => {
+    return await repo.create(data);
 };
 
-export const updateBranch = (id: string, data: Partial<Branch>) => {
-    return repo.update(id, data);
+export const updateBranch = async (id: string, updates: Partial<Branch>) => {
+    return await repo.update(id, updates);
 };
 
-export const deleteBranch = (id: string) => {
-    return repo.delete(id);
+export const deleteBranch = async (id: string) => {
+    return await repo.delete(id);
 };

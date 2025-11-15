@@ -1,24 +1,31 @@
-import { Employee } from "../models/Employee";
 import { FirestoreRepository } from "../repositories/firestoreRepository";
+
+export interface Employee {
+    id?: string;
+    name: string;
+    email: string;
+    position: string;
+    branchId: string;
+}
 
 const repo = new FirestoreRepository<Employee>("employees");
 
-export const getAllEmployees = () => {
-    return repo.getAll();
+export const getAllEmployees = async () => {
+    return await repo.getAll();
 };
 
-export const getEmployeeById = (id: string) => {
-    return repo.getById(id);
+export const getEmployeeById = async (id: string) => {
+    return await repo.getById(id);
 };
 
-export const createEmployee = (data: Employee) => {
-    return repo.create(data);
+export const createEmployee = async (data: Employee) => {
+    return await repo.create(data);
 };
 
-export const updateEmployee = (id: string, data: Partial<Employee>) => {
-    return repo.update(id, data);
+export const updateEmployee = async (id: string, updates: Partial<Employee>) => {
+    return await repo.update(id, updates);
 };
 
-export const deleteEmployee = (id: string) => {
-    return repo.delete(id);
+export const deleteEmployee = async (id: string) => {
+    return await repo.delete(id);
 };
