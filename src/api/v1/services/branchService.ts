@@ -1,41 +1,24 @@
-import { branches, Branch } from "../../data/branches";
+import { Branch } from "../models/Branch";
+import { FirestoreRepository } from "../repositories/firestoreRepository";
+
+const repo = new FirestoreRepository<Branch>("branches");
 
 export const getAllBranches = () => {
-  return branches;
+    return repo.getAll();
 };
 
-export const getBranchById = (id: number) => {
-  return branches.find((b) => b.id === id);
+export const getBranchById = (id: string) => {
+    return repo.getById(id);
 };
 
-export const createBranch = (data: Omit<Branch, "id">) => {
-  const newBranch: Branch = {
-    id: branches.length + 1,
-    ...data,
-  };
-
-  branches.push(newBranch);
-  return newBranch;
+export const createBranch = (data: Branch) => {
+    return repo.create(data);
 };
 
-export const updateBranch = (id: number, updates: Partial<Branch>) => {
-  const branch = branches.find((b) => b.id === id);
-
-  if (!branch) {
-    return null;
-  }
-
-  Object.assign(branch, updates);
-  return branch;
+export const updateBranch = (id: string, data: Partial<Branch>) => {
+    return repo.update(id, data);
 };
 
-export const deleteBranch = (id: number) => {
-  const index = branches.findIndex((b) => b.id === id);
-
-  if (index === -1) {
-    return false;
-  }
-
-  branches.splice(index, 1);
-  return true;
+export const deleteBranch = (id: string) => {
+    return repo.delete(id);
 };

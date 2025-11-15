@@ -1,41 +1,24 @@
-import { employees, Employee } from "../../data/employees";
+import { Employee } from "../models/Employee";
+import { FirestoreRepository } from "../repositories/firestoreRepository";
+
+const repo = new FirestoreRepository<Employee>("employees");
 
 export const getAllEmployees = () => {
-  return employees;
+    return repo.getAll();
 };
 
-export const getEmployeeById = (id: number) => {
-  return employees.find((emp) => emp.id === id);
+export const getEmployeeById = (id: string) => {
+    return repo.getById(id);
 };
 
-export const createEmployee = (data: Omit<Employee, "id">) => {
-  const newEmployee: Employee = {
-    id: employees.length + 1,
-    ...data,
-  };
-
-  employees.push(newEmployee);
-  return newEmployee;
+export const createEmployee = (data: Employee) => {
+    return repo.create(data);
 };
 
-export const updateEmployee = (id: number, updates: Partial<Employee>) => {
-  const employee = employees.find((emp) => emp.id === id);
-
-  if (!employee) {
-    return null;
-  }
-
-  Object.assign(employee, updates);
-  return employee;
+export const updateEmployee = (id: string, data: Partial<Employee>) => {
+    return repo.update(id, data);
 };
 
-export const deleteEmployee = (id: number) => {
-  const index = employees.findIndex((emp) => emp.id === id);
-
-  if (index === -1) {
-    return false;
-  }
-
-  employees.splice(index, 1);
-  return true;
+export const deleteEmployee = (id: string) => {
+    return repo.delete(id);
 };
